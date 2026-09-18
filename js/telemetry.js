@@ -100,8 +100,7 @@ export function createTelemetryRecord({ participantId, sessionId, puzzle }) {
     game: {
       tileCount: puzzle.N,
       colorDistance: puzzle.colorDistance,
-      color1: puzzle.a.map(value => Math.round(value * 255)),
-      color2: puzzle.b.map(value => Math.round(value * 255)),
+      colors: puzzle.palette.map(color => color.map(value => Math.round(value))),
       initialOrder: puzzle.order.map(tile => tile.id),
     },
     events: [],
