@@ -50,6 +50,18 @@
   pointer-events: none;
 }
 .tile.tap-insertion-target { outline: 2px dashed #fff; outline-offset: 2px; cursor: pointer; }
+.strip.reorder-preview .tile-slot {
+  transform: translateX(var(--preview-shift, 0));
+  transition: transform 160ms cubic-bezier(.2, .8, .2, 1);
+  will-change: transform;
+}
+.strip.reorder-preview .drag-source-slot { z-index: 2; }
+.strip.reorder-preview .drag-source-slot .tile,
+.strip.reorder-preview .drag-source-slot .tile-number { opacity: 0; }
+
+@media (prefers-reduced-motion: reduce) {
+  .strip.reorder-preview .tile-slot { transition-duration: 0ms; }
+}
 .tile.edge, .tile:disabled { cursor: default; }
 .tile:disabled { opacity: 1; }
 .tile-number { color: #aab4c6; font-size: 12px; font-variant-numeric: tabular-nums; line-height: 1; }

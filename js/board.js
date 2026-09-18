@@ -4,6 +4,7 @@ let drag = null;
 let suppressClick = false;
 
 export function renderBoard({ tilesElement, game, selected, debugMode, onSelect, onMove, onAccrue, onDragStarted, onDragCancelled, onMessage }) {
+  tilesElement.classList.remove('reorder-preview');
   tilesElement.classList.toggle('dense', game.N > 24);
   tilesElement.classList.toggle('very-dense', game.N > 40);
   tilesElement.classList.toggle('won', game.won);
@@ -99,6 +100,12 @@ function dragMove(event) {
   if (!drag.moved) {
     drag.moved = true;
     drag.callbacks.onDragStarted();
+    const slots = [...document.querySelectorAll('#tiles > .tile-slot')];
+    drag.slots = slots;
+    drag.slotRects = slots.map(slot => slot.getBoundingClientRect());
+    drag.sourceSlot = drag.element.closest('.tile-slot');
+    document.querySelector('#tiles')?.classList.add('reorder-preview');
+    drag.sourceSlot?.classList.add('drag-source-slot');
     drag.element.classList.add('is-dragging');
     const rectangle = drag.element.getBoundingClientRect();
     const ghost = document.createElement('div');
@@ -111,18 +118,15 @@ function dragMove(event) {
   event.preventDefault();
   drag.ghost.style.left = `${event.clientX - drag.ghost.offsetWidth / 2}px`;
   drag.ghost.style.top = `${event.clientY - drag.ghost.offsetHeight / 2}px`;
-  clearInsertionTarget();
   drag.target = insertionBoundaryAt(event.clientX, event.clientY, drag.index);
-  if (drag.target !== null) {
-    document.querySelector('#tiles')?.children[drag.target]?.classList.add('insertion-target');
-  }
+  updateInsertionPreview(drag.target, drag.index);
 }
 
 function dragEnd(event) {
   if (!drag || event.pointerId !== drag.pointerId) return;
   const completedDrag = drag;
   completedDrag.callbacks.onAccrue();
-  dragCleanup();
+  dragCleanup(completedDrag.target !== null);
 
   if (completedDrag.moved) {
     suppressClick = true;
@@ -146,12 +150,35 @@ function dragCancel() {
   }
 }
 
-function dragCleanup() {
+function dragCleanup(preservePreview = false) {
   if (!drag) return;
   drag.element.classList.remove('is-dragging');
-  clearInsertionTarget();
+  if (!preservePreview) clearInsertionPreview();
   drag.ghost?.remove();
   drag = null;
+}
+
+function updateInsertionPreview(insertionPosition, sourcePosition) {
+  if (!drag?.slots || !drag.slotRects) return;
+  const finalPosition = insertionPosition === null
+    ? sourcePosition
+    : insertionPosition > sourcePosition ? insertionPosition - 1 : insertionPosition;
+
+  drag.slots.forEach((slot, position) => {
+    let shift = 0;
+    if (insertionPosition !== null) {
+      if (position === sourcePosition) {
+        shift = drag.slotRects[finalPosition].left - drag.slotRects[sourcePosition].left;
+      } else if (sourcePosition < insertionPosition && position > sourcePosition && position < insertionPosition) {
+        shift = drag.slotRects[position - 1].left - drag.slotRects[position].left;
+      } else if (sourcePosition > insertionPosition && position >= insertionPosition && position < sourcePosition) {
+        shift = drag.slotRects[position + 1].left - drag.slotRects[position].left;
+      }
+    }
+    slot.style.setProperty('--preview-shift', `${shift}px`);
+  });
+
+  drag.sourceSlot?.classList.toggle('insertion-target', insertionPosition !== null);
 }
 
 function insertionBoundaryAt(clientX, clientY, sourcePosition) {
@@ -180,6 +207,11 @@ function insertionBoundaryAt(clientX, clientY, sourcePosition) {
     : closestBoundary;
 }
 
-function clearInsertionTarget() {
-  document.querySelectorAll('.insertion-target').forEach(element => element.classList.remove('insertion-target'));
+function clearInsertionPreview() {
+  const strip = document.querySelector('#tiles');
+  strip?.classList.remove('reorder-preview');
+  strip?.querySelectorAll('.tile-slot').forEach(slot => {
+    slot.classList.remove('drag-source-slot', 'insertion-target');
+    slot.style.removeProperty('--preview-shift');
+  });
 }
