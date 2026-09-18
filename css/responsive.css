@@ -1,72 +1,6 @@
-.orientation-gate {
-  display: none;
-}
-
-/* A phone in portrait is intentionally gated. Orientation locking is only
-   available in some browsers, so the prompt also supports manual rotation. */
-@media (orientation: portrait) and (max-width: 900px) {
-  html,
-  body {
-    width: 100%;
-    height: 100%;
-    overflow: hidden;
-  }
-
-  body > main {
-    display: none;
-  }
-
-  .orientation-gate {
-    display: grid;
-    width: 100%;
-    height: 100dvh;
-    padding: max(24px, env(safe-area-inset-top)) max(24px, env(safe-area-inset-right)) max(24px, env(safe-area-inset-bottom)) max(24px, env(safe-area-inset-left));
-    place-items: center;
-    text-align: center;
-    background: #11151d;
-  }
-
-  .orientation-gate > div {
-    width: min(360px, 100%);
-  }
-
-  .orientation-gate h1 {
-    margin: 10px 0 8px;
-    font-size: clamp(24px, 8vw, 34px);
-  }
-
-  .orientation-gate p {
-    margin: 0 0 18px;
-    color: #aab4c6;
-  }
-
-  .orientation-gate button {
-    width: 100%;
-    min-height: 48px;
-  }
-
-  .orientation-icon {
-    display: inline-grid;
-    width: 72px;
-    height: 48px;
-    border: 3px solid #94bff5;
-    border-radius: 9px;
-    color: #94bff5;
-    font-size: 32px;
-    line-height: 1;
-    place-items: center;
-    transform: rotate(-12deg);
-  }
-
-  #orientationStatus {
-    min-height: 20px;
-    margin-top: 12px;
-  }
-}
-
-/* Phones in landscape use the entire viewport. The puzzle remains a single
-   row and each tile shares the available width; neither page nor board scrolls. */
-@media (orientation: landscape) and (max-height: 500px) {
+/* Mobile and short landscape viewports are contained to the visible screen.
+   The puzzle always remains one row; tiles shrink to share the available width. */
+@media (max-width: 900px), (orientation: landscape) and (max-height: 700px) {
   html,
   body {
     width: 100%;
@@ -75,50 +9,55 @@
     overscroll-behavior: none;
   }
 
-  .orientation-gate {
-    display: none;
-  }
-
   main {
     display: grid;
-    grid-template-columns: auto minmax(0, 1fr) auto;
-    grid-template-rows: auto auto minmax(0, 1fr) auto;
-    gap: 6px 10px;
+    grid-template-areas:
+      "header"
+      "controls"
+      "instruction"
+      "stats"
+      "board"
+      "actions"
+      "status"
+      "warning";
+    grid-template-rows: auto auto auto auto minmax(0, 1fr) auto auto auto;
+    gap: 7px;
     width: 100%;
     height: 100dvh;
     min-height: 0;
-    padding: max(6px, env(safe-area-inset-top)) max(10px, env(safe-area-inset-right)) max(6px, env(safe-area-inset-bottom)) max(10px, env(safe-area-inset-left));
+    padding: max(8px, env(safe-area-inset-top)) max(10px, env(safe-area-inset-right)) max(8px, env(safe-area-inset-bottom)) max(10px, env(safe-area-inset-left));
   }
 
   header {
-    grid-column: 1;
-    grid-row: 1;
+    grid-area: header;
     margin: 0;
-    padding: 0 12px 5px 0;
+    padding: 0 0 6px;
   }
 
-  header h1 { font-size: 19px; }
-  .badge { display: none; }
+  header h1 { font-size: 20px; }
+  .badge { padding: 3px 7px; font-size: 9px; }
 
   .controls {
     display: grid;
-    grid-column: 1 / -1;
-    grid-row: 2;
-    grid-template-columns: minmax(150px, 1fr) minmax(190px, 1.2fr) auto minmax(210px, 1fr);
-    gap: 8px 12px;
+    grid-area: controls;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    gap: 7px 10px;
     align-items: center;
     margin: 0;
-    padding: 7px 9px;
+    padding: 8px 10px;
+    border: 1px solid #343b49;
+    border-radius: 10px;
   }
 
   .controls label {
     display: grid;
-    grid-template-columns: auto minmax(48px, 1fr) auto;
+    grid-template-columns: auto minmax(44px, 1fr) auto;
     gap: 6px;
     align-items: center;
     min-width: 0;
     margin: 0;
-    font-size: 11px;
+    font-size: 12px;
+    white-space: nowrap;
   }
 
   .controls label:has(#debugMode) {
@@ -134,23 +73,23 @@
 
   .control-actions {
     display: flex;
-    gap: 6px;
+    grid-column: 1 / -1;
+    gap: 7px;
+    margin: 0;
   }
 
   .control-actions button {
     flex: 1;
     min-height: 34px;
     padding: 5px 8px;
-    font-size: 11px;
+    font-size: 12px;
     white-space: nowrap;
   }
 
   .controls > .muted { display: none; }
 
   .instruction {
-    grid-column: 2;
-    grid-row: 1;
-    align-self: center;
+    grid-area: instruction;
     min-width: 0;
   }
 
@@ -159,10 +98,9 @@
 
   .stats {
     display: flex;
-    grid-column: 3;
-    grid-row: 1;
-    gap: 16px;
-    align-self: center;
+    grid-area: stats;
+    justify-content: space-around;
+    gap: 12px;
     margin: 0;
     text-align: center;
   }
@@ -172,17 +110,17 @@
 
   .board {
     display: flex;
-    grid-column: 1 / -1;
-    grid-row: 3;
+    grid-area: board;
     min-width: 0;
     min-height: 0;
-    padding: 6px;
+    padding: 7px;
     border-radius: 12px;
   }
 
   .strip {
     display: flex;
     flex: 1;
+    flex-wrap: nowrap;
     gap: clamp(1px, .25vw, 3px);
     min-width: 0;
     min-height: 0;
@@ -206,7 +144,7 @@
     width: 100%;
     height: 100%;
     min-width: 0;
-    min-height: 26px;
+    min-height: 22px;
     border-radius: clamp(1px, .5vw, 4px);
   }
 
@@ -227,24 +165,22 @@
 
   .actions {
     display: flex;
-    grid-column: 1;
-    grid-row: 4;
+    grid-area: actions;
     gap: 6px;
     margin: 0;
   }
 
   .actions button {
-    min-width: 150px;
+    flex: 1;
     min-height: 36px;
     padding: 6px 12px;
   }
 
   #status {
-    grid-column: 2 / -1;
-    grid-row: 4;
+    grid-area: status;
     align-self: center;
     min-width: 0;
-    min-height: 18px;
+    min-height: 16px;
     margin: 0;
     overflow: hidden;
     font-size: 11px;
@@ -253,37 +189,106 @@
     text-overflow: ellipsis;
   }
 
-  #sharetext,
-  #warning {
+  #sharetext {
     position: fixed;
     right: max(10px, env(safe-area-inset-right));
-    bottom: max(6px, env(safe-area-inset-bottom));
-    width: min(420px, 60vw);
+    bottom: max(8px, env(safe-area-inset-bottom));
+    width: min(420px, calc(100vw - 20px));
     max-height: 58px;
     margin: 0;
+  }
+
+  #warning {
+    grid-area: warning;
+    min-height: 0;
+    font-size: 11px;
   }
 
   #warning:empty { display: none; }
 }
 
-/* Narrow landscape phones need two compact control rows. */
-@media (orientation: landscape) and (max-height: 500px) and (max-width: 700px) {
+/* Landscape becomes a compact toolbar + board + footer. This breakpoint also
+   covers short desktop-sized browser windows such as mobile landscape previews. */
+@media (orientation: landscape) and (max-height: 700px) {
   main {
-    grid-template-rows: auto auto minmax(0, 1fr) auto;
-    gap: 5px 8px;
+    grid-template-areas:
+      "header instruction stats"
+      "controls controls controls"
+      "board board board"
+      "actions status status"
+      "warning warning warning";
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    grid-template-rows: auto auto minmax(0, 1fr) auto auto;
+    gap: 6px 12px;
+    padding: max(6px, env(safe-area-inset-top)) max(12px, env(safe-area-inset-right)) max(6px, env(safe-area-inset-bottom)) max(12px, env(safe-area-inset-left));
   }
+
+  header {
+    align-self: center;
+    padding: 0 12px 4px 0;
+  }
+
+  header h1 { font-size: 19px; }
+  .badge { display: none; }
+
+  .instruction { align-self: center; }
+
+  .stats {
+    justify-content: end;
+    gap: 16px;
+    align-self: center;
+  }
+
+  .controls {
+    grid-template-columns: minmax(150px, 1fr) minmax(190px, 1.2fr) auto minmax(210px, 1fr);
+    gap: 6px 12px;
+    padding: 6px 9px;
+  }
+
+  .control-actions {
+    grid-column: auto;
+  }
+
+  .board { padding: 7px; }
+
+  .actions {
+    min-width: 150px;
+  }
+
+  .actions button { min-height: 34px; padding: 5px 12px; }
+}
+
+/* Narrow landscape phones place the toolbar actions on a second line while
+   preserving a large single-row board below it. */
+@media (orientation: landscape) and (max-height: 700px) and (max-width: 700px) {
+  main { gap: 5px 8px; }
 
   .controls {
     grid-template-columns: minmax(130px, 1fr) minmax(160px, 1.2fr) auto;
     gap: 5px 8px;
-    padding: 6px 8px;
+    padding: 5px 8px;
   }
 
   .control-actions {
     grid-column: 1 / -1;
   }
 
+  .control-actions button { min-height: 28px; }
+  .stats { gap: 9px; }
+  .actions { min-width: 140px; }
+}
+
+@media (orientation: portrait) and (max-width: 360px) {
+  .controls {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 5px;
+    padding: 7px 9px;
+  }
+
+  .control-actions {
+    grid-column: 1;
+  }
+
+  .controls label { font-size: 11px; }
   .control-actions button { min-height: 30px; }
-  .stats { gap: 10px; }
-  .actions button { min-width: 140px; }
 }

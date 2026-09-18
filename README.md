@@ -45,7 +45,7 @@ Official instructions: https://docs.github.com/en/pages/getting-started-with-git
 - The fixed edge tiles have the same borderless appearance as the other tiles; their positions and non-interactive behavior distinguish them.
 - Position numbers appear in a separate row beneath the tiles.
 - Two endpoint colors define `N` equally spaced component-wise sRGB interpolations.
-- Phones use a landscape-only layout. Portrait mode displays a rotation prompt and offers browser orientation locking where supported; manual rotation is the fallback. Landscape mode keeps the complete puzzle in one scaled row with no page or board scrollbar.
+- Phones support both orientations. The complete puzzle remains in one scaled row with no page or board scrollbar, while controls collapse into a compact toolbar so the board receives most of the viewport.
 - There is no attempt limit.
 
 Progress resumes on reload and the latest 100 sessions are retained in that browser. This static prototype has no central database, accounts, leaderboard, trusted clock, or anti-cheat validation.

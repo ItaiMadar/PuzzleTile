@@ -30,8 +30,6 @@ const elements = {
   colorError: byId('colorError'),
   cancelColors: byId('cancelColors'),
   applyColors: byId('applyColors'),
-  landscapeMode: byId('landscapeMode'),
-  orientationStatus: byId('orientationStatus'),
 };
 
 const showStorageWarning = message => { elements.warning.textContent = message; };
@@ -245,26 +243,6 @@ elements.distance.oninput = () => {
 };
 
 elements.debugMode.onchange = render;
-
-elements.landscapeMode.onclick = async () => {
-  elements.orientationStatus.textContent = '';
-  let enteredFullscreen = false;
-  try {
-    if (!screen.orientation?.lock) {
-      throw new Error('Orientation locking is unavailable');
-    }
-    if (!document.fullscreenElement && document.documentElement.requestFullscreen) {
-      await document.documentElement.requestFullscreen();
-      enteredFullscreen = true;
-    }
-    await screen.orientation.lock('landscape');
-  } catch {
-    if (enteredFullscreen && document.fullscreenElement && document.exitFullscreen) {
-      await document.exitFullscreen().catch(() => {});
-    }
-    elements.orientationStatus.textContent = 'Please rotate your device sideways.';
-  }
-};
 
 elements.share.onclick = async () => {
   const result = `PuzzleTile Demo (N=${game.N}, d: ${game.colorDistance.toFixed(3)})\nGradient restored ✨\n${game.moves} swaps · ${game.attempts} checks · ${duration(game.elapsed)}`;
