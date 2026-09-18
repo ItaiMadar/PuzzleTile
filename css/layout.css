@@ -1,0 +1,21 @@
+main { width: 100%; margin: auto; padding: 32px 24px; }
+
+header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 28px;
+  padding-bottom: 24px;
+  border-bottom: 1px solid #343b49;
+}
+
+.controls { margin-bottom: 24px; padding: 18px; border-radius: 12px; background: #191f2a; }
+.controls label { display: inline-flex; gap: 12px; align-items: center; margin: 6px 24px 6px 0; }
+.control-actions, .actions { display: inline-flex; flex-wrap: wrap; gap: 9px; }
+.instruction { display: flex; gap: 20px; align-items: start; justify-content: space-between; }
+.instruction p { margin: 0; }
+.stats { display: flex; gap: 28px; margin: 28px 0; }
+.actions { margin-top: 22px; }
+.color-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin: 22px 0; }
+.color-grid label { display: grid; gap: 8px; }
+.dialog-actions { display: flex; gap: 9px; justify-content: flex-end; }

@@ -1,50 +1,72 @@
 <!doctype html>
-<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#11151d"><title>PuzzleTile — Color puzzle</title>
-<style>
-:root{color-scheme:dark;font-family:system-ui,sans-serif;color:#edf0f6;background:#11151d}*{box-sizing:border-box}body{margin:0}main{width:100%;margin:auto;padding:32px 24px}header{display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid #343b49;padding-bottom:24px;margin-bottom:28px}h1{font-size:26px;letter-spacing:-1px;margin:0}.muted{color:#aab4c6;font-size:14px}.badge{border:1px solid #455063;border-radius:30px;padding:6px 12px;font-size:13px}button{font:inherit;color:inherit;background:#232b39;border:1px solid #465165;border-radius:10px;padding:12px 18px;cursor:pointer}button:hover{background:#354057}button:disabled{opacity:.45;cursor:default}button:focus-visible,input:focus-visible{outline:3px solid #b8d9ff;outline-offset:4px}.primary{background:#d7e9ff;color:#10243f;border-color:#d7e9ff}.controls{background:#191f2a;border-radius:12px;padding:18px;margin-bottom:24px}.controls label{display:inline-flex;gap:12px;align-items:center;margin:6px 24px 6px 0}.control-actions{display:inline-flex;gap:9px;flex-wrap:wrap}.distance-input{width:180px;max-width:180px}.debug-values{position:absolute;inset:80% auto auto 50%;translate:-50% -50%;display:grid;gap:2px;padding:4px;border-radius:5px;background:#10151dcc;color:#fff;font-size:11px;line-height:1;text-align:center;font-variant-numeric:tabular-nums;pointer-events:none}input{accent-color:#a6ceff;max-width:140px}p{line-height:1.6}.instruction{display:flex;justify-content:space-between;gap:20px;align-items:start}.instruction p{margin:0}.stats{display:flex;gap:28px;margin:28px 0}.stats strong{display:block;font-size:26px;font-variant-numeric:tabular-nums}.stats span{font-size:14px;color:#aab4c6}.board{background:#191f2a;padding:24px;border-radius:18px;border:1px solid #343b49}.strip{display:flex;gap:3px;overflow-x:auto;padding:8px 2px 18px;border:3px solid transparent;border-radius:10px;transition:border-color .2s,box-shadow .2s}.strip.won{border-color:#d4af37;box-shadow:0 0 18px #d4af3744}.tile-slot{display:flex;flex:1 1 0;min-width:22px;flex-direction:column;align-items:center;gap:8px}.tile{position:relative;width:100%;min-width:0;height:clamp(90px,12vw,150px);border:0;border-radius:6px;padding:0;transition:transform .12s,opacity .12s;touch-action:none;cursor:grab}.tile:hover{transform:translateY(-3px);background:var(--color)}.tile[aria-pressed=true]{outline:3px solid white;outline-offset:3px;transform:translateY(-5px)}.tile.is-dragging{opacity:.28;cursor:grabbing}.tile.drop-target{outline:3px solid white;outline-offset:3px;transform:translateY(-5px)}.tile.edge,.tile:disabled{cursor:default}.tile:disabled{opacity:1}.tile-number{color:#aab4c6;font-size:12px;line-height:1;font-variant-numeric:tabular-nums}.tile.wiggle{animation:wiggle .42s ease-in-out}.drag-ghost{position:fixed;z-index:20;pointer-events:none;border:2px solid #fff;border-radius:6px;box-shadow:0 14px 35px #0008;opacity:.9}@keyframes wiggle{0%,100%{translate:0}20%{translate:-5px}40%{translate:5px}60%{translate:-4px}80%{translate:4px}}.actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:22px}#status{min-height:28px;margin:18px 0 0;color:#d7e9ff}#sharetext{width:100%;min-height:90px;margin-top:16px;background:#191f2a;color:white;padding:12px;font:inherit}#warning,#colorError{color:#ffd296}.color-dialog{width:min(430px,calc(100% - 32px));border:1px solid #465165;border-radius:16px;background:#191f2a;color:#edf0f6;padding:24px;box-shadow:0 25px 70px #000b}.color-dialog::backdrop{background:#080b10cc}.color-dialog h2{margin:0 0 8px}.color-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin:22px 0}.color-grid label{display:grid;gap:8px}.color-grid input{width:100%;max-width:none;height:60px;border:1px solid #59657a;border-radius:9px;background:none;padding:4px;cursor:pointer}.dialog-actions{display:flex;justify-content:flex-end;gap:9px}[hidden]{display:none!important}@media(max-width:600px){main{padding:20px 16px}.board{padding:16px 10px}.tile{height:100px}.tile-slot{min-width:22px}.strip{gap:3px}.stats{gap:24px}.instruction{display:block}.badge{font-size:12px}.control-actions{display:flex;margin-top:10px}}
-</style></head><body><main>
-<header><h1>PuzzleTile<span style="color:#94bff5">.</span></h1><span class="badge">PLAYABLE PROTOTYPE</span></header>
-<section class="controls"><label>Tiles N <input id="n" type="range" min="4" max="50" value="12"><output id="nv">12</output></label><label>Color distance <input id="distance" class="distance-input" type="range" min="0" max="1" step="0.001" value="0.430"><output id="distanceValue">0.430</output></label><label><input id="debugMode" type="checkbox"> DEBUG MODE</label><span class="control-actions"><button id="random">Random color</button><button id="choose">Select colors</button></span><p class="muted">Normalized sRGB distance: 0–1. Minimum for this N: <span id="distanceMin"></span>.</p></section>
-<div class="instruction"><p>Arrange the tiles from the start color to the end color.<br>The start and end tiles are fixed. Drag any interior tile onto another to swap them, then check your order.</p><p id="puzzlelabel" class="muted"></p></div>
-<div class="stats"><div><strong id="moves">0</strong><span>swaps</span></div><div><strong id="attempts">0</strong><span>checks</span></div><div><strong id="timer">0:00</strong><span>active time</span></div></div>
-<section class="board" aria-label="Color puzzle"><div id="tiles" class="strip" aria-label="Tiles, ordered left to right"></div><p class="muted" style="margin:0">The two edge tiles are fixed. On small screens, swipe beside the tiles to scroll.</p></section>
-<div class="actions"><button id="check" class="primary">Check order</button><button id="share" hidden>Share result</button></div><p id="status" role="status" aria-live="polite"></p><textarea id="sharetext" aria-label="Result to copy" readonly hidden></textarea><div id="warning" role="status"></div>
-<dialog id="colorDialog" class="color-dialog"><h2>Select endpoint colors</h2><p class="muted">The puzzle will interpolate the colors between these two points in sRGB.</p><div class="color-grid"><label>Start color<input id="startInput" type="color"></label><label>End color<input id="endInput" type="color"></label></div><p id="colorError" role="alert" hidden>The start and end colors must be different.</p><div class="dialog-actions"><button id="cancelColors">Cancel</button><button id="applyColors" class="primary">Use colors</button></div></dialog>
-</main><script>
-'use strict';
-const VERSION=5,KEY='puzzletile-v5',$=id=>document.getElementById(id);
-function rng(seed){let h=2166136261;for(const c of seed)h=Math.imul(h^c.charCodeAt(0),16777619);return()=>{h+=0x6D2B79F5;let t=Math.imul(h^h>>>15,1|h);t^=t+Math.imul(t^t>>>7,61|t);return((t^t>>>14)>>>0)/4294967296;};}
-function minColorDistance(N){const n=Math.floor(N/3),r=N%3;return Math.sqrt(3*n*n+2*r*n+r)/(255*Math.sqrt(3));}
-function colorsAtDistance(r,normalizedDistance){if(!Number.isFinite(normalizedDistance)||normalizedDistance<0||normalizedDistance>1)throw Error('Invalid color distance');const d=normalizedDistance*Math.sqrt(3);let remaining=d*d;const loX=Math.sqrt(Math.max(0,remaining-2)),hiX=Math.min(1,Math.sqrt(remaining)),x=loX+(hiX-loX)*r();remaining-=x*x;const loY=Math.sqrt(Math.max(0,remaining-1)),hiY=Math.min(1,Math.sqrt(remaining)),y=loY+(hiY-loY)*r(),z=Math.sqrt(Math.max(0,remaining-y*y)),delta=[x,y,z];for(let i=2;i>0;i--){const j=Math.floor(r()*(i+1));[delta[i],delta[j]]=[delta[j],delta[i]];}for(let i=0;i<3;i++)if(r()<.5)delta[i]*=-1;const a=delta.map(v=>v>=0?r()*(1-v):-v+r()*(1+v)),b=a.map((v,i)=>v+delta[i]);return[a,b];}
-function makePuzzle(seed,N,endpoints,distance=null){if(!Number.isInteger(N)||N<4||N>50)throw Error('Invalid tile count');const r=rng(seed);let a,b;if(endpoints)[a,b]=endpoints;else if(distance!==null){if(!Number.isFinite(distance)||distance<0||distance>1)throw Error('Invalid color distance');[a,b]=colorsAtDistance(r,Math.max(distance,minColorDistance(N)));}else{a=[r(),r(),r()];b=[r(),r(),r()];}const palette=Array.from({length:N},(_,i)=>a.map((v,j)=>255*(v+(b[j]-v)*i/(N-1))));const target=Array.from({length:N},(_,i)=>i),order=target.map((color,id)=>({color,id}));for(let i=N-2;i>1;i--){const j=1+Math.floor(r()*i);[order[i],order[j]]=[order[j],order[i]];}if(order.every((t,i)=>t.color===target[i]))[order[1],order[N-2]]=[order[N-2],order[1]];return{palette,target,order,N,k:N,a,b,colorDistance:Math.hypot(...a.map((v,i)=>v-b[i]))/Math.sqrt(3)};}
-const css=c=>'rgb('+c.map(v=>v.toFixed(5)).join(',')+')';
-const toHex=c=>'#'+c.map(v=>Math.round(v*255).toString(16).padStart(2,'0')).join('');
-const fromHex=h=>[1,3,5].map(i=>parseInt(h.slice(i,i+2),16)/255);
-let db={sessions:[]};try{const saved=JSON.parse(localStorage.getItem(KEY));if(saved&&Array.isArray(saved.sessions))db=saved;}catch(e){$('warning').textContent='Browser storage is unavailable. You can still play this session.';}
-let game,selected=null,tick=performance.now(),drag=null,suppressClick=false;
-function save(){try{localStorage.setItem(KEY,JSON.stringify(db));}catch(e){$('warning').textContent='Progress could not be saved in this browser.';}}
-function event(type,payload={}){game.events.push({seq:game.events.length,type,elapsedMs:Math.round(game.elapsed),at:new Date().toISOString(),...payload});}
-function accrue(){const now=performance.now();if(game&&!game.won&&!document.hidden)game.elapsed+=now-tick;tick=now;}
-function start({fresh=false,endpoints=null,distance=null,source=null}={}){accrue();save();selected=null;$('sharetext').hidden=true;game=!fresh?db.sessions.find(s=>s.mode==='practice'&&!s.won&&s.version===VERSION):null;if(!game){const seed=crypto.getRandomValues(new Uint32Array(4)).join('-'),puzzle=makePuzzle(seed,+$('n').value,endpoints,distance);game={id:'practice-'+seed,mode:'practice',seed,...puzzle,moves:0,attempts:0,elapsed:0,won:false,events:[],startedAt:new Date().toISOString(),metadata:{language:navigator.language,timeZone:Intl.DateTimeFormat().resolvedOptions().timeZone,viewport:[innerWidth,innerHeight]},version:VERSION,colorSource:source??(endpoints?'selected':distance!==null?'distance':'random')};db.sessions.unshift(game);db.sessions=db.sessions.slice(0,100);event('started',{order:game.order.map(t=>t.id),colorSource:game.colorSource,colorDistance:game.colorDistance});}tick=performance.now();$('status').textContent=game.won?'Gradient restored. Nicely done!':'Drag a tile onto another tile to swap them.';render();save();}
-function render(){$('puzzlelabel').textContent=game.N+' tiles / '+game.N+' colors'+(game.colorSource==='distance'?' · distance '+game.colorDistance.toFixed(3):'');$('tiles').classList.toggle('won',game.won);$('tiles').replaceChildren(...game.order.map((tile,i)=>{const slot=document.createElement('div');slot.className='tile-slot';const fixed=i===0||i===game.N-1,node=document.createElement(fixed?'div':'button');node.className='tile'+(fixed?' edge':'');node.dataset.index=i;node.dataset.fixed=fixed;node.style.background=css(game.palette[tile.color]);node.style.setProperty('--color',css(game.palette[tile.color]));node.setAttribute('aria-label',(fixed?(i===0?'Fixed start':'Fixed end'):'Tile')+' at position '+(i+1));if($('debugMode').checked){const debug=document.createElement('span');debug.className='debug-values';game.palette[tile.color].forEach(v=>{const line=document.createElement('span');line.textContent=Math.round(v);debug.append(line);});node.append(debug);}if(!fixed){node.setAttribute('aria-pressed',selected===i);node.disabled=game.won;node.onclick=()=>{if(!suppressClick)select(i)};node.onpointerdown=e=>dragStart(e,i,node);}const number=document.createElement('span');number.className='tile-number';number.textContent=i+1;number.setAttribute('aria-hidden','true');slot.append(node,number);return slot;}));$('moves').textContent=game.moves;$('attempts').textContent=game.attempts;$('check').disabled=game.won;$('share').hidden=!game.won;clock();}
-function swapPositions(a,b,kind='swapped'){if(a===b||game.won)return;[game.order[a],game.order[b]]=[game.order[b],game.order[a]];game.moves++;selected=null;event(kind,{positions:[a,b],order:game.order.map(t=>t.id)});$('status').textContent='Tiles swapped. Check when you are ready.';render();save();}
-function dragStart(e,index,el){if(game.won||(e.button!==undefined&&e.button!==0))return;drag={pointerId:e.pointerId,index,x:e.clientX,y:e.clientY,el,moved:false,ghost:null,target:null};el.setPointerCapture(e.pointerId);el.onpointermove=dragMove;el.onpointerup=dragEnd;el.onpointercancel=dragCancel;}
-function dragMove(e){if(!drag||e.pointerId!==drag.pointerId)return;const dx=e.clientX-drag.x,dy=e.clientY-drag.y;if(!drag.moved&&Math.hypot(dx,dy)<7)return;if(!drag.moved){drag.moved=true;selected=null;drag.el.classList.add('is-dragging');const rect=drag.el.getBoundingClientRect(),ghost=document.createElement('div');ghost.className='drag-ghost';ghost.style.cssText+=';width:'+rect.width+'px;height:'+rect.height+'px;background:'+drag.el.style.background;document.body.append(ghost);drag.ghost=ghost;}e.preventDefault();drag.ghost.style.left=(e.clientX-drag.ghost.offsetWidth/2)+'px';drag.ghost.style.top=(e.clientY-drag.ghost.offsetHeight/2)+'px';document.querySelectorAll('.drop-target').forEach(x=>x.classList.remove('drop-target'));const hit=document.elementFromPoint(e.clientX,e.clientY)?.closest('.tile');drag.target=hit&&hit!==drag.el&&hit.dataset.fixed!=='true'?+hit.dataset.index:null;if(drag.target!==null)hit.classList.add('drop-target');}
-function dragEnd(e){if(!drag||e.pointerId!==drag.pointerId)return;const d=drag,wasMoved=d.moved,target=d.target;accrue();dragCleanup();if(wasMoved){suppressClick=true;setTimeout(()=>suppressClick=false,0);if(target!==null)swapPositions(d.index,target,'dragged');else{$('status').textContent='Drop a tile onto another tile to swap them.';render();}}}
-function dragCancel(){if(!drag)return;const moved=drag.moved;dragCleanup();if(moved){suppressClick=true;setTimeout(()=>suppressClick=false,0);render();}}
-function dragCleanup(){if(!drag)return;drag.el.classList.remove('is-dragging');document.querySelectorAll('.drop-target').forEach(x=>x.classList.remove('drop-target'));drag.ghost?.remove();drag=null;}
-function select(i){accrue();if(game.won)return;if(selected===null){selected=i;event('selected',{position:i,tileId:game.order[i].id});render();save();}else if(selected===i){selected=null;render();save();}else{const j=selected;swapPositions(j,i);}$('tiles').children[i]?.querySelector('button')?.focus();}
-$('check').onclick=()=>{accrue();if(game.won)return;game.attempts++;const wrong=[],correct=game.order.filter((t,i)=>{const ok=t.color===game.target[i];if(!ok)wrong.push(i);return ok;}).length;event('checked',{correct,wrongPositions:wrong,order:game.order.map(t=>t.id)});game.won=correct===game.N;if(game.won){game.completedAt=new Date().toISOString();event('completed');}selected=null;$('status').textContent=game.won?'Gradient restored! '+game.moves+' swaps · '+game.attempts+' checks.':correct+' of '+game.N+' positions are correct. Keep going!';render();if(!game.won)requestAnimationFrame(()=>wrong.forEach(i=>$('tiles').children[i]?.querySelector('.tile')?.classList.add('wiggle')));save();};
-$('random').onclick=()=>start({fresh:true,distance:Number($('distance').value)});
-$('choose').onclick=()=>{$('startInput').value=toHex(game.a);$('endInput').value=toHex(game.b);$('colorError').hidden=true;$('colorDialog').showModal();};
-$('cancelColors').onclick=()=>$('colorDialog').close();
-$('applyColors').onclick=()=>{const endpoints=[fromHex($('startInput').value),fromHex($('endInput').value)],distance=Math.hypot(...endpoints[0].map((v,i)=>v-endpoints[1][i]))/Math.sqrt(3),min=minColorDistance(+$('n').value);if(distance<min){$('colorError').textContent='For N = '+$('n').value+', choose colors at least '+min.toFixed(3)+' apart.';$('colorError').hidden=false;return;}$('colorDialog').close();start({fresh:true,endpoints});};
-function syncDistanceControl(){const min=minColorDistance(+$('n').value);$('distance').min=min;if(Number($('distance').value)<min)$('distance').value=min;$('distanceValue').value=Number($('distance').value).toFixed(3);$('distanceMin').textContent=min.toFixed(3);return min;}
-let resizeTimer;$('n').oninput=()=>{$('nv').value=$('n').value;const min=syncDistanceControl();clearTimeout(resizeTimer);resizeTimer=setTimeout(()=>game.colorDistance>=min?start({fresh:true,endpoints:[game.a,game.b],source:game.colorSource}):start({fresh:true,distance:Number($('distance').value)}),80);};
-$('distance').oninput=()=>{$('distanceValue').value=Number($('distance').value).toFixed(3);};
-$('debugMode').onchange=render;
-function duration(ms){const s=Math.floor(ms/1000);return Math.floor(s/60)+':'+String(s%60).padStart(2,'0');}function clock(){$('timer').textContent=duration(game.elapsed);}
-$('share').onclick=async()=>{const result='PuzzleTile Practice\nGradient restored ✨\n'+game.moves+' swaps · '+game.attempts+' checks · '+duration(game.elapsed);$('sharetext').value=result;$('sharetext').hidden=false;try{await navigator.clipboard.writeText(result);$('status').textContent='Result copied!';}catch{$('status').textContent='Copy your result from the text box below.';$('sharetext').select();}};
-document.addEventListener('keydown',e=>{if(e.key==='Escape'&&$('colorDialog').open)return;if(e.key==='Escape'){selected=null;render();}});
-document.addEventListener('visibilitychange',()=>{tick=performance.now();save();});window.addEventListener('pagehide',()=>{accrue();save();});setInterval(()=>{accrue();clock();},250);setInterval(save,5000);syncDistanceControl();start({distance:Number($('distance').value)});
-</script></body></html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="theme-color" content="#11151d">
+  <title>PuzzleTile — Color puzzle</title>
+  <link rel="stylesheet" href="./css/base.css">
+  <link rel="stylesheet" href="./css/layout.css">
+  <link rel="stylesheet" href="./css/components.css">
+  <link rel="stylesheet" href="./css/responsive.css">
+</head>
+<body>
+  <main>
+    <header>
+      <h1>PuzzleTile<span class="brand-dot">.</span></h1>
+      <span class="badge">PLAYABLE PROTOTYPE</span>
+    </header>
+
+    <section class="controls" aria-label="Puzzle settings">
+      <label>Tiles N <input id="n" type="range" min="4" max="50" value="12"><output id="nv">12</output></label>
+      <label>Color distance <input id="distance" class="distance-input" type="range" min="0" max="1" step="0.001" value="0.430"><output id="distanceValue">0.430</output></label>
+      <label><input id="debugMode" type="checkbox"> DEBUG MODE</label>
+      <span class="control-actions">
+        <button id="random">Random color</button>
+        <button id="choose">Select colors</button>
+      </span>
+      <p class="muted">Normalized sRGB distance: 0–1. Minimum for this N: <span id="distanceMin"></span>.</p>
+    </section>
+
+    <div class="instruction">
+      <p>Arrange the tiles from the start color to the end color.<br>The start and end tiles are fixed. Drag any interior tile onto another to swap them, then check your order.</p>
+      <p id="puzzlelabel" class="muted"></p>
+    </div>
+
+    <div class="stats">
+      <div><strong id="moves">0</strong><span>swaps</span></div>
+      <div><strong id="attempts">0</strong><span>checks</span></div>
+      <div><strong id="timer">0:00</strong><span>active time</span></div>
+    </div>
+
+    <section class="board" aria-label="Color puzzle">
+      <div id="tiles" class="strip" aria-label="Tiles, ordered left to right and top to bottom when wrapped"></div>
+      <p class="muted board-help">The two edge tiles are fixed. On small screens, the sequence continues onto the next row.</p>
+    </section>
+
+    <div class="actions">
+      <button id="check" class="primary">Check order</button>
+      <button id="share" hidden>Share result</button>
+    </div>
+    <p id="status" role="status" aria-live="polite"></p>
+    <textarea id="sharetext" aria-label="Result to copy" readonly hidden></textarea>
+    <div id="warning" role="status"></div>
+
+    <dialog id="colorDialog" class="color-dialog">
+      <h2>Select endpoint colors</h2>
+      <p class="muted">The puzzle will interpolate the colors between these two points in sRGB.</p>
+      <div class="color-grid">
+        <label>Start color<input id="startInput" type="color"></label>
+        <label>End color<input id="endInput" type="color"></label>
+      </div>
+      <p id="colorError" role="alert" hidden>The start and end colors must be different.</p>
+      <div class="dialog-actions">
+        <button id="cancelColors">Cancel</button>
+        <button id="applyColors" class="primary">Use colors</button>
+      </div>
+    </dialog>
+  </main>
+
+  <script type="module" src="./js/app.js?v=5"></script>
+</body>
+</html>
