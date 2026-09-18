@@ -32,9 +32,16 @@ export function createSession({ tileCount, endpoints, distance, source }) {
   };
 }
 
-export function swapTiles(game, firstPosition, secondPosition) {
-  [game.order[firstPosition], game.order[secondPosition]] = [game.order[secondPosition], game.order[firstPosition]];
+export function insertTile(game, fromPosition, insertionPosition) {
+  if (fromPosition <= 0 || fromPosition >= game.N - 1) return null;
+  if (insertionPosition <= 0 || insertionPosition >= game.N) return null;
+  if (insertionPosition === fromPosition || insertionPosition === fromPosition + 1) return null;
+
+  const [tile] = game.order.splice(fromPosition, 1);
+  const toPosition = insertionPosition > fromPosition ? insertionPosition - 1 : insertionPosition;
+  game.order.splice(toPosition, 0, tile);
   game.moves++;
+  return toPosition;
 }
 
 export function checkOrder(game) {

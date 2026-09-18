@@ -32,7 +32,7 @@ Official instructions: https://docs.github.com/en/pages/getting-started-with-git
 ## Current game
 
 - Practice mode only.
-- Drag one tile onto another with a mouse or touch gesture to swap them. Tapping two tiles and keyboard selection also work.
+- Drag an interior tile into a gap between two tiles to insert it at that position, shifting the intervening tiles. Tapping a tile and then the tile that should follow it provides the equivalent non-drag interaction; the fixed end can be chosen to move a tile to the final interior position.
 - **Check order** submits an attempt. Incorrectly positioned tiles wiggle after an unsuccessful check.
 - A correct solution keeps every tile at full color and surrounds the complete tile grid with a gold border.
 - **Random color** starts a new puzzle whose endpoints have the distance selected by the **Color distance** slider.
@@ -41,7 +41,7 @@ Official instructions: https://docs.github.com/en/pages/getting-started-with-git
 - **DEBUG MODE** displays each tile's three 8-bit sRGB channel values vertically inside the tile.
 - **Select colors** opens endpoint color pickers and starts a new puzzle with those colors.
 - `N` ranges from 4 to 50 and `k` is always equal to `N`, so every tile has a unique color. Moving the `N` slider rebuilds the puzzle immediately while preserving its endpoint colors.
-- The first and last colors stay fixed at the two ends of the spectrum. Only interior tiles can be selected, dragged, or swapped.
+- The first and last colors stay fixed at the two ends of the spectrum. Only interior tiles can be selected, dragged, or moved.
 - The fixed edge tiles have the same borderless appearance as the other tiles; their positions and non-interactive behavior distinguish them.
 - Position numbers appear in a separate row beneath the tiles.
 - Two endpoint colors define `N` equally spaced component-wise sRGB interpolations.

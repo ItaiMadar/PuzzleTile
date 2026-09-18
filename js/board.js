@@ -3,7 +3,7 @@ import { colorToCss } from './puzzle.js';
 let drag = null;
 let suppressClick = false;
 
-export function renderBoard({ tilesElement, game, selected, debugMode, onSelect, onSwap, onAccrue, onDragStarted, onDragCancelled, onMessage }) {
+export function renderBoard({ tilesElement, game, selected, debugMode, onSelect, onMove, onAccrue, onDragStarted, onDragCancelled, onMessage }) {
   tilesElement.classList.toggle('dense', game.N > 24);
   tilesElement.classList.toggle('very-dense', game.N > 40);
   tilesElement.classList.toggle('won', game.won);
@@ -40,12 +40,26 @@ export function renderBoard({ tilesElement, game, selected, debugMode, onSelect,
       };
       tileElement.onpointerdown = event => dragStart(event, position, tileElement, {
         game,
-        onSwap,
+        onMove,
         onAccrue,
         onDragStarted,
         onDragCancelled,
         onMessage,
       });
+    }
+
+    if (fixed && position === game.N - 1 && selected !== null) {
+      tileElement.classList.add('tap-insertion-target');
+      tileElement.setAttribute('role', 'button');
+      tileElement.tabIndex = 0;
+      tileElement.setAttribute('aria-label', 'Fixed end. Insert selected tile before this endpoint.');
+      tileElement.onclick = () => onSelect(position);
+      tileElement.onkeydown = event => {
+        if (event.key === 'Enter' || event.key === ' ') {
+          event.preventDefault();
+          onSelect(position);
+        }
+      };
     }
 
     const number = document.createElement('span');
@@ -97,10 +111,11 @@ function dragMove(event) {
   event.preventDefault();
   drag.ghost.style.left = `${event.clientX - drag.ghost.offsetWidth / 2}px`;
   drag.ghost.style.top = `${event.clientY - drag.ghost.offsetHeight / 2}px`;
-  document.querySelectorAll('.drop-target').forEach(element => element.classList.remove('drop-target'));
-  const hit = document.elementFromPoint(event.clientX, event.clientY)?.closest('.tile');
-  drag.target = hit && hit !== drag.element && hit.dataset.fixed !== 'true' ? Number(hit.dataset.index) : null;
-  if (drag.target !== null) hit.classList.add('drop-target');
+  clearInsertionTarget();
+  drag.target = insertionBoundaryAt(event.clientX, event.clientY, drag.index);
+  if (drag.target !== null) {
+    document.querySelector('#tiles')?.children[drag.target]?.classList.add('insertion-target');
+  }
 }
 
 function dragEnd(event) {
@@ -113,9 +128,9 @@ function dragEnd(event) {
     suppressClick = true;
     setTimeout(() => { suppressClick = false; }, 0);
     if (completedDrag.target !== null) {
-      completedDrag.callbacks.onSwap(completedDrag.index, completedDrag.target, 'dragged');
+      completedDrag.callbacks.onMove(completedDrag.index, completedDrag.target, 'inserted_drag');
     } else {
-      completedDrag.callbacks.onMessage('Drop a tile onto another tile to swap them.');
+      completedDrag.callbacks.onMessage('Drop the tile in a gap between two tiles.');
     }
   }
 }
@@ -134,7 +149,37 @@ function dragCancel() {
 function dragCleanup() {
   if (!drag) return;
   drag.element.classList.remove('is-dragging');
-  document.querySelectorAll('.drop-target').forEach(element => element.classList.remove('drop-target'));
+  clearInsertionTarget();
   drag.ghost?.remove();
   drag = null;
+}
+
+function insertionBoundaryAt(clientX, clientY, sourcePosition) {
+  const strip = document.querySelector('#tiles');
+  if (!strip) return null;
+  const stripRect = strip.getBoundingClientRect();
+  if (clientX < stripRect.left || clientX > stripRect.right || clientY < stripRect.top || clientY > stripRect.bottom) {
+    return null;
+  }
+
+  const slots = [...strip.children];
+  let closestBoundary = null;
+  let closestDistance = Infinity;
+  for (let boundary = 1; boundary < slots.length; boundary++) {
+    const left = slots[boundary - 1].getBoundingClientRect();
+    const right = slots[boundary].getBoundingClientRect();
+    const boundaryX = (left.right + right.left) / 2;
+    const distance = Math.abs(clientX - boundaryX);
+    if (distance < closestDistance) {
+      closestDistance = distance;
+      closestBoundary = boundary;
+    }
+  }
+  return closestBoundary === sourcePosition || closestBoundary === sourcePosition + 1
+    ? null
+    : closestBoundary;
+}
+
+function clearInsertionTarget() {
+  document.querySelectorAll('.insertion-target').forEach(element => element.classList.remove('insertion-target'));
 }

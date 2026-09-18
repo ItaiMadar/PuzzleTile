@@ -1,5 +1,5 @@
 import { renderBoard } from './board.js';
-import { checkOrder, createSession, findResumableSession, swapTiles } from './game-state.js';
+import { checkOrder, createSession, findResumableSession, insertTile } from './game-state.js';
 import { colorFromHex, colorToHex, minColorDistance } from './puzzle.js';
 import { addSession, loadDatabase, saveDatabase } from './storage.js';
 import { recordEvent } from './telemetry.js';
@@ -75,7 +75,7 @@ function start({ fresh = false, endpoints = null, distance = null, source = null
   tick = performance.now();
   elements.status.textContent = game.won
     ? 'Gradient restored. Nicely done!'
-    : 'Drag a tile onto another tile to swap them.';
+    : 'Drag a tile into a gap between two tiles.';
   render();
   save();
 }
@@ -100,7 +100,7 @@ function render() {
     selected,
     debugMode: elements.debugMode.checked,
     onSelect: select,
-    onSwap: swapPositions,
+    onMove: movePosition,
     onAccrue: accrue,
     onDragStarted: () => { selected = null; },
     onDragCancelled: render,
@@ -117,15 +117,23 @@ function render() {
   updateClock();
 }
 
-function swapPositions(firstPosition, secondPosition, kind = 'swapped') {
-  if (firstPosition === secondPosition || game.won) return;
-  swapTiles(game, firstPosition, secondPosition);
+function movePosition(fromPosition, insertionPosition, kind = 'inserted_tap') {
+  if (game.won) return;
+  const toPosition = insertTile(game, fromPosition, insertionPosition);
   selected = null;
+  if (toPosition === null) {
+    elements.status.textContent = 'Choose a different gap for that tile.';
+    render();
+    save();
+    return;
+  }
   recordEvent(game, kind, {
-    positions: [firstPosition, secondPosition],
+    fromPosition,
+    insertionPosition,
+    toPosition,
     order: game.order.map(tile => tile.id),
   });
-  elements.status.textContent = 'Tiles swapped. Check when you are ready.';
+  elements.status.textContent = 'Tile inserted. Check when you are ready.';
   render();
   save();
 }
@@ -145,7 +153,7 @@ function select(position) {
     save();
   } else {
     const previous = selected;
-    swapPositions(previous, position);
+    movePosition(previous, position);
   }
 
   elements.tiles.children[position]?.querySelector('button')?.focus();
@@ -187,7 +195,7 @@ elements.check.onclick = () => {
 
   selected = null;
   elements.status.textContent = game.won
-    ? `Gradient restored! ${game.moves} swaps · ${game.attempts} checks.`
+    ? `Gradient restored! ${game.moves} moves · ${game.attempts} checks.`
     : `${correct} of ${game.N} positions are correct. Keep going!`;
   render();
 
@@ -245,7 +253,7 @@ elements.distance.oninput = () => {
 elements.debugMode.onchange = render;
 
 elements.share.onclick = async () => {
-  const result = `PuzzleTile Demo (N=${game.N}, d: ${game.colorDistance.toFixed(3)})\nGradient restored ✨\n${game.moves} swaps · ${game.attempts} checks · ${duration(game.elapsed)}`;
+  const result = `PuzzleTile Demo (N=${game.N}, d: ${game.colorDistance.toFixed(3)})\nGradient restored ✨\n${game.moves} moves · ${game.attempts} checks · ${duration(game.elapsed)}`;
   elements.shareText.value = result;
   elements.shareText.hidden = false;
   try {
