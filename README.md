@@ -48,7 +48,11 @@ Official instructions: https://docs.github.com/en/pages/getting-started-with-git
 - Phones support both orientations. The complete puzzle remains in one scaled row with no page or board scrollbar, while controls collapse into a compact toolbar so the board receives most of the viewport.
 - There is no attempt limit.
 
-Progress resumes on reload and the latest 100 sessions are retained in that browser. This static prototype has no central database, accounts, leaderboard, trusted clock, or anti-cheat validation.
+Progress resumes on reload and the latest 100 sessions are retained in that browser. Each game also contains a versioned telemetry record with a persistent anonymous participant ID, device context, IP-derived country code, puzzle parameters, initial tile order, and a single ordered stream of committed moves and puzzle checks. The IP address returned by the country lookup is discarded and is never written to browser storage.
+
+The country lookup currently uses the configurable `COUNTRY_LOOKUP_URL` in `js/config.js`. It is best-effort: an unavailable lookup leaves `metadata.country` as `null` and never prevents play. A future first-party data server should perform this lookup itself and return or attach only the country code.
+
+This static prototype has no central database, accounts, leaderboard, trusted clock, or anti-cheat validation. Telemetry remains in browser storage until a data server is implemented.
 
 ## Development
 
@@ -59,7 +63,7 @@ The project is organized by responsibility:
 - `js/puzzle.js` contains deterministic puzzle and color rules.
 - `js/game-state.js` contains session and puzzle-state operations.
 - `js/board.js` renders and manages board pointer interactions.
-- `js/telemetry.js` records gameplay events.
+- `js/telemetry.js` creates participant and device metadata, resolves a country code without retaining the IP address, and records replayable gameplay events.
 - `js/storage.js` owns browser persistence.
 - `js/app.js` initializes the application and connects the modules.
 

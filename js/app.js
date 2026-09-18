@@ -2,7 +2,13 @@ import { renderBoard } from './board.js';
 import { checkOrder, createSession, findResumableSession, insertTile } from './game-state.js';
 import { colorFromHex, colorToHex, minColorDistance } from './puzzle.js';
 import { addSession, loadDatabase, saveDatabase } from './storage.js';
-import { recordEvent } from './telemetry.js';
+import {
+  getParticipantId,
+  lookupCountryFromIp,
+  markCompleted,
+  recordEvent,
+  updateTelemetryProgress,
+} from './telemetry.js';
 
 const byId = id => document.getElementById(id);
 const elements = {
@@ -34,6 +40,8 @@ const elements = {
 
 const showStorageWarning = message => { elements.warning.textContent = message; };
 let database = loadDatabase(showStorageWarning);
+const participantId = getParticipantId(showStorageWarning);
+const countryPendingSessions = new Set();
 let game;
 let selected = null;
 let tick = performance.now();
@@ -46,10 +54,11 @@ function save() {
 function accrue() {
   const now = performance.now();
   if (game && !game.won && !document.hidden) game.elapsed += now - tick;
+  if (game) updateTelemetryProgress(game);
   tick = now;
 }
 
-function start({ fresh = false, endpoints = null, distance = null, source = null } = {}) {
+function start({ fresh = false, endpoints = null, distance = null } = {}) {
   accrue();
   save();
   selected = null;
@@ -61,15 +70,12 @@ function start({ fresh = false, endpoints = null, distance = null, source = null
       tileCount: Number(elements.n.value),
       endpoints,
       distance,
-      source,
+      participantId,
     });
     addSession(database, game);
-    recordEvent(game, 'started', {
-      order: game.order.map(tile => tile.id),
-      colorSource: game.colorSource,
-      colorDistance: game.colorDistance,
-    });
   }
+
+  if (!game.telemetry.metadata.country) countryPendingSessions.add(game.id);
 
   syncControlsToGame();
   tick = performance.now();
@@ -91,8 +97,7 @@ function syncControlsToGame() {
 }
 
 function render() {
-  const distanceLabel = game.colorSource === 'distance' ? ` · distance ${game.colorDistance.toFixed(3)}` : '';
-  elements.puzzleLabel.textContent = `${game.N} tiles / ${game.N} colors${distanceLabel}`;
+  elements.puzzleLabel.textContent = `${game.N} tiles / ${game.N} colors · distance ${game.colorDistance.toFixed(3)}`;
 
   renderBoard({
     tilesElement: elements.tiles,
@@ -117,8 +122,9 @@ function render() {
   updateClock();
 }
 
-function movePosition(fromPosition, insertionPosition, kind = 'inserted_tap') {
+function movePosition(fromPosition, insertionPosition) {
   if (game.won) return;
+  const tileId = game.order[fromPosition]?.id;
   const toPosition = insertTile(game, fromPosition, insertionPosition);
   selected = null;
   if (toPosition === null) {
@@ -127,11 +133,12 @@ function movePosition(fromPosition, insertionPosition, kind = 'inserted_tap') {
     save();
     return;
   }
-  recordEvent(game, kind, {
+  recordEvent(game, 'move_inserted', {
+    tileId,
     fromPosition,
     insertionPosition,
     toPosition,
-    order: game.order.map(tile => tile.id),
+    orderAfter: game.order.map(tile => tile.id),
   });
   elements.status.textContent = 'Tile inserted. Check when you are ready.';
   render();
@@ -144,7 +151,6 @@ function select(position) {
 
   if (selected === null) {
     selected = position;
-    recordEvent(game, 'selected', { position, tileId: game.order[position].id });
     render();
     save();
   } else if (selected === position) {
@@ -182,15 +188,15 @@ elements.check.onclick = () => {
   if (game.won) return;
   game.attempts++;
   const { correct, wrongPositions } = checkOrder(game);
-  recordEvent(game, 'checked', {
-    correct,
+  const checkEvent = recordEvent(game, 'check_submitted', {
+    correctPositions: correct,
     wrongPositions,
-    order: game.order.map(tile => tile.id),
+    orderAtCheck: game.order.map(tile => tile.id),
   });
   game.won = correct === game.N;
   if (game.won) {
     game.completedAt = new Date().toISOString();
-    recordEvent(game, 'completed');
+    markCompleted(game, checkEvent);
   }
 
   selected = null;
@@ -239,7 +245,7 @@ elements.n.oninput = () => {
   clearTimeout(resizeTimer);
   resizeTimer = setTimeout(() => {
     if (game.colorDistance >= minimum) {
-      start({ fresh: true, endpoints: [game.a, game.b], source: game.colorSource });
+      start({ fresh: true, endpoints: [game.a, game.b] });
     } else {
       start({ fresh: true, distance: Number(elements.distance.value) });
     }
@@ -288,6 +294,16 @@ setInterval(() => {
   updateClock();
 }, 250);
 setInterval(save, 5000);
+
+lookupCountryFromIp().then(country => {
+  if (!country) return;
+  database.sessions.forEach(session => {
+    if (countryPendingSessions.has(session.id) && session.telemetry?.metadata) {
+      session.telemetry.metadata.country = country;
+    }
+  });
+  save();
+});
 
 syncDistanceControl();
 start({ distance: Number(elements.distance.value) });

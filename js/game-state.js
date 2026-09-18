@@ -1,5 +1,6 @@
 import { VERSION } from './config.js';
 import { makePuzzle } from './puzzle.js';
+import { createTelemetryRecord } from './telemetry.js';
 
 export function findResumableSession(database) {
   return database.sessions.find(session =>
@@ -7,28 +8,24 @@ export function findResumableSession(database) {
   );
 }
 
-export function createSession({ tileCount, endpoints, distance, source }) {
+export function createSession({ tileCount, endpoints, distance, participantId }) {
   const seed = crypto.getRandomValues(new Uint32Array(4)).join('-');
   const puzzle = makePuzzle(seed, tileCount, endpoints, distance);
+  const sessionId = crypto.randomUUID
+    ? crypto.randomUUID()
+    : `practice-${seed}`;
 
   return {
-    id: `practice-${seed}`,
+    id: sessionId,
     mode: 'practice',
-    seed,
     ...puzzle,
     moves: 0,
     attempts: 0,
     elapsed: 0,
     won: false,
-    events: [],
     startedAt: new Date().toISOString(),
-    metadata: {
-      language: navigator.language,
-      timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone,
-      viewport: [innerWidth, innerHeight],
-    },
+    telemetry: createTelemetryRecord({ participantId, sessionId, puzzle }),
     version: VERSION,
-    colorSource: source ?? (endpoints ? 'selected' : distance !== null ? 'distance' : 'random'),
   };
 }
 
