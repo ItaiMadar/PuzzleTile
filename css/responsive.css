@@ -1,6 +1,72 @@
-/* Phones use a contained app layout: the page itself does not scroll and the
-   board wraps into a grid whose row/column counts are supplied by board.js. */
-@media (max-width: 700px), (orientation: landscape) and (max-height: 500px) {
+.orientation-gate {
+  display: none;
+}
+
+/* A phone in portrait is intentionally gated. Orientation locking is only
+   available in some browsers, so the prompt also supports manual rotation. */
+@media (orientation: portrait) and (max-width: 900px) {
+  html,
+  body {
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+  }
+
+  body > main {
+    display: none;
+  }
+
+  .orientation-gate {
+    display: grid;
+    width: 100%;
+    height: 100dvh;
+    padding: max(24px, env(safe-area-inset-top)) max(24px, env(safe-area-inset-right)) max(24px, env(safe-area-inset-bottom)) max(24px, env(safe-area-inset-left));
+    place-items: center;
+    text-align: center;
+    background: #11151d;
+  }
+
+  .orientation-gate > div {
+    width: min(360px, 100%);
+  }
+
+  .orientation-gate h1 {
+    margin: 10px 0 8px;
+    font-size: clamp(24px, 8vw, 34px);
+  }
+
+  .orientation-gate p {
+    margin: 0 0 18px;
+    color: #aab4c6;
+  }
+
+  .orientation-gate button {
+    width: 100%;
+    min-height: 48px;
+  }
+
+  .orientation-icon {
+    display: inline-grid;
+    width: 72px;
+    height: 48px;
+    border: 3px solid #94bff5;
+    border-radius: 9px;
+    color: #94bff5;
+    font-size: 32px;
+    line-height: 1;
+    place-items: center;
+    transform: rotate(-12deg);
+  }
+
+  #orientationStatus {
+    min-height: 20px;
+    margin-top: 12px;
+  }
+}
+
+/* Phones in landscape use the entire viewport. The puzzle remains a single
+   row and each tile shares the available width; neither page nor board scrolls. */
+@media (orientation: landscape) and (max-height: 500px) {
   html,
   body {
     width: 100%;
@@ -9,44 +75,54 @@
     overscroll-behavior: none;
   }
 
+  .orientation-gate {
+    display: none;
+  }
+
   main {
     display: grid;
-    grid-template-rows: auto auto auto auto minmax(0, 1fr) auto auto auto;
-    gap: 8px;
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    grid-template-rows: auto auto minmax(0, 1fr) auto;
+    gap: 6px 10px;
     width: 100%;
     height: 100dvh;
     min-height: 0;
-    padding: max(10px, env(safe-area-inset-top)) max(10px, env(safe-area-inset-right)) max(10px, env(safe-area-inset-bottom)) max(10px, env(safe-area-inset-left));
+    padding: max(6px, env(safe-area-inset-top)) max(10px, env(safe-area-inset-right)) max(6px, env(safe-area-inset-bottom)) max(10px, env(safe-area-inset-left));
   }
 
   header {
+    grid-column: 1;
+    grid-row: 1;
     margin: 0;
-    padding: 0 0 8px;
+    padding: 0 12px 5px 0;
   }
 
-  h1 { font-size: 22px; }
-  .badge { padding: 4px 8px; font-size: 10px; }
+  header h1 { font-size: 19px; }
+  .badge { display: none; }
 
   .controls {
     display: grid;
-    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    grid-column: 1 / -1;
+    grid-row: 2;
+    grid-template-columns: minmax(150px, 1fr) minmax(190px, 1.2fr) auto minmax(210px, 1fr);
     gap: 8px 12px;
+    align-items: center;
     margin: 0;
-    padding: 10px;
+    padding: 7px 9px;
   }
 
   .controls label {
     display: grid;
-    grid-template-columns: auto minmax(0, 1fr) auto;
+    grid-template-columns: auto minmax(48px, 1fr) auto;
     gap: 6px;
+    align-items: center;
     min-width: 0;
     margin: 0;
-    font-size: 13px;
+    font-size: 11px;
   }
 
   .controls label:has(#debugMode) {
     display: flex;
-    grid-column: 1;
   }
 
   .controls input[type="range"],
@@ -58,53 +134,56 @@
 
   .control-actions {
     display: flex;
-    grid-column: 1 / -1;
-    gap: 8px;
-    margin: 0;
+    gap: 6px;
   }
 
-  .control-actions button { flex: 1; padding: 9px 10px; }
-
-  .controls > .muted {
-    grid-column: 1 / -1;
-    margin: 0;
+  .control-actions button {
+    flex: 1;
+    min-height: 34px;
+    padding: 5px 8px;
     font-size: 11px;
-    line-height: 1.25;
+    white-space: nowrap;
   }
+
+  .controls > .muted { display: none; }
 
   .instruction {
-    display: block;
+    grid-column: 2;
+    grid-row: 1;
+    align-self: center;
     min-width: 0;
-    font-size: 13px;
   }
 
-  .instruction p { line-height: 1.3; }
-  #puzzlelabel { margin-top: 3px; font-size: 11px; }
+  .instruction > p:first-child { display: none; }
+  #puzzlelabel { margin: 0; font-size: 11px; white-space: nowrap; }
 
   .stats {
-    justify-content: space-around;
-    gap: 12px;
+    display: flex;
+    grid-column: 3;
+    grid-row: 1;
+    gap: 16px;
+    align-self: center;
     margin: 0;
     text-align: center;
   }
 
-  .stats strong { font-size: 20px; line-height: 1; }
-  .stats span { font-size: 11px; }
+  .stats strong { font-size: 17px; line-height: 1; }
+  .stats span { font-size: 9px; }
 
   .board {
     display: flex;
+    grid-column: 1 / -1;
+    grid-row: 3;
+    min-width: 0;
     min-height: 0;
-    padding: 8px;
+    padding: 6px;
     border-radius: 12px;
   }
 
   .strip {
-    display: grid;
+    display: flex;
     flex: 1;
-    grid-template-columns: repeat(var(--portrait-columns), minmax(0, 1fr));
-    grid-template-rows: repeat(var(--portrait-rows), minmax(34px, 68px));
-    align-content: center;
-    gap: 4px;
+    gap: clamp(1px, .25vw, 3px);
     min-width: 0;
     min-height: 0;
     padding: 4px;
@@ -116,6 +195,7 @@
 
   .tile-slot {
     display: grid;
+    flex: 1 1 0;
     grid-template-rows: minmax(0, 1fr) auto;
     gap: 2px;
     min-width: 0;
@@ -125,158 +205,85 @@
   .tile {
     width: 100%;
     height: 100%;
-    min-height: 30px;
-    border-radius: 4px;
+    min-width: 0;
+    min-height: 26px;
+    border-radius: clamp(1px, .5vw, 4px);
   }
 
-  .tile-number { font-size: 9px; }
-  .strip.dense .tile-number { font-size: 8px; }
-  .strip.very-dense .tile-number { visibility: hidden; }
-  .strip.very-dense .tile-slot:nth-child(5n) .tile-number,
-  .strip.very-dense .tile-slot:first-child .tile-number,
-  .strip.very-dense .tile-slot:last-child .tile-number { visibility: visible; }
+  .tile-number { font-size: 8px; }
+  .strip.dense .tile-number { visibility: hidden; }
+  .strip.dense .tile-slot:nth-child(5n) .tile-number,
+  .strip.dense .tile-slot:first-child .tile-number,
+  .strip.dense .tile-slot:last-child .tile-number { visibility: visible; }
 
   .debug-values {
     inset: 50% auto auto 50%;
     gap: 1px;
     padding: 2px;
-    font-size: 8px;
+    font-size: 7px;
   }
 
   .board-help { display: none; }
 
   .actions {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
+    display: flex;
+    grid-column: 1;
+    grid-row: 4;
+    gap: 6px;
     margin: 0;
   }
 
-  .actions button { min-height: 40px; padding: 8px 12px; }
-  .actions button:only-child { grid-column: 1 / -1; }
+  .actions button {
+    min-width: 150px;
+    min-height: 36px;
+    padding: 6px 12px;
+  }
 
   #status {
+    grid-column: 2 / -1;
+    grid-row: 4;
+    align-self: center;
+    min-width: 0;
     min-height: 18px;
     margin: 0;
     overflow: hidden;
-    font-size: 12px;
-    line-height: 1.35;
+    font-size: 11px;
+    line-height: 1.3;
     white-space: nowrap;
     text-overflow: ellipsis;
   }
 
-  #sharetext {
-    min-height: 0;
-    max-height: 54px;
+  #sharetext,
+  #warning {
+    position: fixed;
+    right: max(10px, env(safe-area-inset-right));
+    bottom: max(6px, env(safe-area-inset-bottom));
+    width: min(420px, 60vw);
+    max-height: 58px;
     margin: 0;
   }
 
   #warning:empty { display: none; }
 }
 
-@media (orientation: landscape) and (max-height: 500px) {
+/* Narrow landscape phones need two compact control rows. */
+@media (orientation: landscape) and (max-height: 500px) and (max-width: 700px) {
   main {
-    grid-template-columns: minmax(230px, 34%) minmax(0, 1fr);
-    grid-template-rows: auto auto auto minmax(0, 1fr) auto auto;
-    gap: 6px 10px;
-    padding: max(6px, env(safe-area-inset-top)) max(10px, env(safe-area-inset-right)) max(6px, env(safe-area-inset-bottom)) max(10px, env(safe-area-inset-left));
+    grid-template-rows: auto auto minmax(0, 1fr) auto;
+    gap: 5px 8px;
   }
-
-  header { grid-column: 1; grid-row: 1; padding-bottom: 5px; }
-  header h1 { font-size: 19px; }
-  .badge { display: none; }
 
   .controls {
-    grid-column: 1;
-    grid-row: 2 / 5;
-    align-content: start;
-    padding: 8px;
+    grid-template-columns: minmax(130px, 1fr) minmax(160px, 1.2fr) auto;
+    gap: 5px 8px;
+    padding: 6px 8px;
   }
 
-  .controls label { font-size: 11px; }
-  .controls > .muted { display: none; }
-  .control-actions button { min-height: 36px; padding: 6px; font-size: 12px; }
-
-  .instruction {
-    grid-column: 2;
-    grid-row: 1;
-    align-self: center;
-  }
-
-  .instruction > p:first-child { display: none; }
-  #puzzlelabel { margin: 0; }
-
-  .stats {
-    grid-column: 1;
-    grid-row: 5;
-  }
-
-  .stats strong { font-size: 17px; }
-  .stats span { font-size: 10px; }
-
-  .board {
-    grid-column: 2;
-    grid-row: 2 / 5;
-    padding: 6px;
-  }
-
-  .strip {
-    grid-template-columns: repeat(var(--landscape-columns), minmax(0, 1fr));
-    grid-template-rows: repeat(var(--landscape-rows), minmax(34px, 1fr));
-    gap: 3px;
-  }
-
-  .tile { min-height: 28px; }
-
-  .actions {
-    grid-column: 2;
-    grid-row: 5;
-  }
-
-  #status {
-    grid-column: 2;
-    grid-row: 6;
-  }
-
-  #sharetext,
-  #warning {
+  .control-actions {
     grid-column: 1 / -1;
   }
-}
 
-@media (orientation: portrait) and (max-height: 700px) {
-  main {
-    gap: 5px;
-    padding: max(6px, env(safe-area-inset-top)) max(10px, env(safe-area-inset-right)) max(6px, env(safe-area-inset-bottom)) max(10px, env(safe-area-inset-left));
-  }
-
-  header { padding-bottom: 4px; }
-  h1 { font-size: 19px; }
-  .badge { font-size: 9px; }
-
-  .controls {
-    gap: 5px 8px;
-    padding: 7px;
-  }
-
-  .controls label { font-size: 11px; }
-  .controls > .muted { display: none; }
-  .control-actions { gap: 6px; }
-  .control-actions button { min-height: 34px; padding: 5px 7px; font-size: 12px; }
-
-  .instruction > p:first-child { display: none; }
-  #puzzlelabel { margin: 0; }
-
-  .stats strong { font-size: 17px; }
-  .stats span { font-size: 10px; }
-
-  .board { padding: 6px; }
-
-  .strip {
-    grid-template-rows: repeat(var(--portrait-rows), minmax(22px, 1fr));
-    align-content: stretch;
-    gap: 3px;
-  }
-
-  .tile { min-height: 20px; }
-  .actions button { min-height: 36px; padding: 6px 10px; }
+  .control-actions button { min-height: 30px; }
+  .stats { gap: 10px; }
+  .actions button { min-width: 140px; }
 }

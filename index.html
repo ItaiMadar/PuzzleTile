@@ -11,6 +11,16 @@
   <link rel="stylesheet" href="./css/responsive.css">
 </head>
 <body>
+  <section id="orientationGate" class="orientation-gate" aria-labelledby="orientationTitle">
+    <div>
+      <span class="orientation-icon" aria-hidden="true">↻</span>
+      <h1 id="orientationTitle">Landscape required</h1>
+      <p>Rotate your device sideways to play PuzzleTile.</p>
+      <button id="landscapeMode" class="primary">Use landscape</button>
+      <p id="orientationStatus" class="muted" role="status" aria-live="polite"></p>
+    </div>
+  </section>
+
   <main>
     <header>
       <h1>PuzzleTile<span class="brand-dot">.</span></h1>
@@ -40,8 +50,8 @@
     </div>
 
     <section class="board" aria-label="Color puzzle">
-      <div id="tiles" class="strip" aria-label="Tiles, ordered left to right and top to bottom when wrapped"></div>
-      <p class="muted board-help">The two edge tiles are fixed. On small screens, the sequence continues onto the next row.</p>
+      <div id="tiles" class="strip" aria-label="Tiles, ordered left to right"></div>
+      <p class="muted board-help">The two edge tiles are fixed.</p>
     </section>
 
     <div class="actions">

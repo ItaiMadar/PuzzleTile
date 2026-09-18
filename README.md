@@ -2,6 +2,33 @@
 
 A playable, dependency-free browser game built with semantic HTML, CSS, and native JavaScript modules. There is no build step, external font, package, or API key.
 
+## Play locally
+
+Because the game uses native JavaScript modules, serve the project over HTTP rather than opening `index.html` directly. For example:
+
+```sh
+npx serve .
+```
+
+Or, with Python installed:
+
+```sh
+python -m http.server 8000
+```
+
+Then open the local URL printed by the server. GitHub Pages also provides a stable origin for saving progress.
+
+## Publish on GitHub Pages
+
+1. Create a GitHub repository.
+2. Upload `index.html`, `README.md`, and the `css` and `js` directories to the root of the `main` branch. Upload the extracted files, not the ZIP.
+3. Open **Settings → Pages**.
+4. Under **Build and deployment**, select **Deploy from a branch**.
+5. Select **main** and **/(root)**, then save.
+6. Wait for deployment and open the URL shown in Pages settings.
+
+Official instructions: https://docs.github.com/en/pages/getting-started-with-github-pages/configuring-a-publishing-source-for-your-github-pages-site
+
 ## Current game
 
 - Practice mode only.
@@ -18,7 +45,7 @@ A playable, dependency-free browser game built with semantic HTML, CSS, and nati
 - The fixed edge tiles have the same borderless appearance as the other tiles; their positions and non-interactive behavior distinguish them.
 - Position numbers appear in a separate row beneath the tiles.
 - Two endpoint colors define `N` equally spaced component-wise sRGB interpolations.
-- On phones, the complete board wraps into a responsive grid with no page or board scrollbar. Portrait mode uses additional rows; landscape mode uses a wider, compact two-column layout.
+- Phones use a landscape-only layout. Portrait mode displays a rotation prompt and offers browser orientation locking where supported; manual rotation is the fallback. Landscape mode keeps the complete puzzle in one scaled row with no page or board scrollbar.
 - There is no attempt limit.
 
 Progress resumes on reload and the latest 100 sessions are retained in that browser. This static prototype has no central database, accounts, leaderboard, trusted clock, or anti-cheat validation.

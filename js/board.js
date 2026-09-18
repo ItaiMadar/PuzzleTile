@@ -4,12 +4,6 @@ let drag = null;
 let suppressClick = false;
 
 export function renderBoard({ tilesElement, game, selected, debugMode, onSelect, onSwap, onAccrue, onDragStarted, onDragCancelled, onMessage }) {
-  const portraitColumns = mobileColumnCount(game.N, 'portrait');
-  const landscapeColumns = mobileColumnCount(game.N, 'landscape');
-  tilesElement.style.setProperty('--portrait-columns', portraitColumns);
-  tilesElement.style.setProperty('--portrait-rows', Math.ceil(game.N / portraitColumns));
-  tilesElement.style.setProperty('--landscape-columns', landscapeColumns);
-  tilesElement.style.setProperty('--landscape-rows', Math.ceil(game.N / landscapeColumns));
   tilesElement.classList.toggle('dense', game.N > 24);
   tilesElement.classList.toggle('very-dense', game.N > 40);
   tilesElement.classList.toggle('won', game.won);
@@ -61,17 +55,6 @@ export function renderBoard({ tilesElement, game, selected, debugMode, onSelect,
     slot.append(tileElement, number);
     return slot;
   }));
-}
-
-function mobileColumnCount(tileCount, orientation) {
-  if (orientation === 'landscape') {
-    if (tileCount <= 20) return tileCount;
-    return Math.ceil(tileCount / 2);
-  }
-
-  if (tileCount <= 12) return tileCount;
-  if (tileCount <= 36) return Math.ceil(tileCount / Math.ceil(tileCount / 12));
-  return Math.ceil(tileCount / Math.ceil(tileCount / 10));
 }
 
 function dragStart(event, index, element, callbacks) {
