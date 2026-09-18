@@ -34,21 +34,7 @@
 
 .tile:hover { background: var(--color); transform: translateY(-3px); }
 .tile[aria-pressed="true"] { outline: 3px solid white; outline-offset: 3px; transform: translateY(-5px); }
-.tile.is-dragging { opacity: .28; cursor: grabbing; }
-.tile-slot.insertion-target { position: relative; }
-.tile-slot.insertion-target::before {
-  position: absolute;
-  z-index: 3;
-  top: -4px;
-  bottom: 14px;
-  left: -3px;
-  width: 4px;
-  border-radius: 4px;
-  box-shadow: 0 0 8px #000a;
-  background: white;
-  content: "";
-  pointer-events: none;
-}
+.tile.is-dragging { opacity: 0; cursor: grabbing; }
 .tile.tap-insertion-target { outline: 2px dashed #fff; outline-offset: 2px; cursor: pointer; }
 .strip.reorder-preview .tile-slot {
   transform: translateX(var(--preview-shift, 0));
@@ -84,7 +70,7 @@
 }
 
 .tile.wiggle { animation: wiggle .42s ease-in-out; }
-.drag-ghost { position: fixed; z-index: 20; border: 2px solid #fff; border-radius: 6px; box-shadow: 0 14px 35px #0008; opacity: .9; pointer-events: none; }
+.drag-ghost { position: fixed; z-index: 20; border: 2px solid #fff; border-radius: 6px; box-shadow: 0 14px 35px #0008; opacity: 1; pointer-events: none; }
 
 @keyframes wiggle {
   0%, 100% { translate: 0; }

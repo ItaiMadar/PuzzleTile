@@ -89,6 +89,7 @@ function dragStart(event, index, element, callbacks) {
   element.onpointermove = dragMove;
   element.onpointerup = dragEnd;
   element.onpointercancel = dragCancel;
+  element.onlostpointercapture = dragCancel;
 }
 
 function dragMove(event) {
@@ -178,7 +179,6 @@ function updateInsertionPreview(insertionPosition, sourcePosition) {
     slot.style.setProperty('--preview-shift', `${shift}px`);
   });
 
-  drag.sourceSlot?.classList.toggle('insertion-target', insertionPosition !== null);
 }
 
 function insertionBoundaryAt(clientX, clientY, sourcePosition) {
@@ -211,7 +211,21 @@ function clearInsertionPreview() {
   const strip = document.querySelector('#tiles');
   strip?.classList.remove('reorder-preview');
   strip?.querySelectorAll('.tile-slot').forEach(slot => {
-    slot.classList.remove('drag-source-slot', 'insertion-target');
+    slot.classList.remove('drag-source-slot');
     slot.style.removeProperty('--preview-shift');
   });
 }
+
+document.addEventListener('pointerdown', event => {
+  if (drag && (event.pointerId !== drag.pointerId || event.button !== 0)) dragCancel();
+}, true);
+
+document.addEventListener('contextmenu', dragCancel, true);
+document.addEventListener('keydown', event => {
+  if (event.key === 'Escape') dragCancel();
+});
+document.addEventListener('visibilitychange', () => {
+  if (document.hidden) dragCancel();
+});
+window.addEventListener('blur', dragCancel);
+window.addEventListener('pagehide', dragCancel);

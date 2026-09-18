@@ -32,7 +32,7 @@ Official instructions: https://docs.github.com/en/pages/getting-started-with-git
 ## Current game
 
 - Practice mode only.
-- Drag an interior tile into a gap between two tiles to insert it at that position. While dragging, the other tiles animate aside to preview the result before it is committed. Tapping a tile and then the tile that should follow it provides the equivalent non-drag interaction; the fixed end can be chosen to move a tile to the final interior position.
+- Drag an interior tile into a gap between two tiles to insert it at that position. While dragging, the other tiles animate aside to preview the result before it is committed. Interrupted drags—including right-clicks, lost pointer capture, Escape, focus loss, and page changes—cancel cleanly. Tapping a tile and then the tile that should follow it provides the equivalent non-drag interaction; the fixed end can be chosen to move a tile to the final interior position.
 - **Check order** submits an attempt. Incorrectly positioned tiles wiggle after an unsuccessful check.
 - A correct solution keeps every tile at full color and surrounds the complete tile grid with a gold border.
 - **Random color** starts a new puzzle whose endpoints have the distance selected by the **Color distance** slider.
